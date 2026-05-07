@@ -29,7 +29,7 @@ class Task(models.Model):
     )
 
     assigned_to = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="tasks"
+        User, on_delete=models.SET_NULL, null=True, related_name="user_tasks"
     )
 
     created_by = models.ForeignKey(

@@ -44,6 +44,17 @@ class TaskSerializer(serializers.ModelSerializer):
             created_by=user,
             **validated_data
         )
+    def update(self, instance, validated_data):
+        print(validated_data)
+
+        instance = super().update(instance, validated_data)
+
+        # if assigned_to_id is not None:
+        #     instance.assigned_to_id = assigned_to_id
+        instance.save()
+
+        return instance
+    
     def validate(self, validated_data):
         user = self.context.get("user")
         if not self.instance:

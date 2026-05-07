@@ -71,6 +71,25 @@ class TaskViewSet(ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        instance = serializer.save()
+
+        assigned_to = request.data.get("assigned_to")
+        print(assigned_to)
+
+        if assigned_to is not None:
+            instance.assigned_to_id = assigned_to
+            instance.save(update_fields=["assigned_to"])
+
+        return Response(self.get_serializer(instance).data)
+
 
 class TaskList(ModelViewSet):
     queryset = Task.objects.all()
@@ -78,4 +97,4 @@ class TaskList(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(created_by = self.request.user)
+        return Task.objects.filter(assigned_to = self.request.user)
