@@ -5,11 +5,14 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db import transaction
 from django.conf import settings
 from .serializers import RegisterSerializer
 from django.contrib.auth import authenticate
+from users.models import User
+from projects.api.serializers import UserSerializer
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -43,3 +46,10 @@ class Login(APIView):
             "refresh": str(refresh),
             "role": user.role
         }, status=status.HTTP_200_OK)
+    
+class UserList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        queryset = User.objects.filter(role="member")
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

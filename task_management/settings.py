@@ -105,12 +105,26 @@ import os
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise Exception("DATABASE_URL not set in environment")
+# if not DATABASE_URL:
+#     raise Exception("DATABASE_URL not set in environment")
+
+
+
+# DATABASES = {
+#     "default": dj_database_url.parse(DATABASE_URL)
+# }
 
 DATABASES = {
-    "default": dj_database_url.parse(DATABASE_URL)
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'task_manager',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 

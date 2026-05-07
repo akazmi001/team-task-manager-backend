@@ -8,6 +8,9 @@ from django.utils.timezone import now
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 
+from users.models import User
+from .serializers import UserSerializer
+
 class DashboardView(APIView):
     def get(self, request):
         user = request.user
@@ -30,10 +33,19 @@ class ProjectViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Project.objects.filter(created_by=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data = request.data,
+            context = {
+                "user": request.user
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def perform_create(self, serializer):
-        project = serializer.save(created_by=self.request.user)
-        # project.members.add(self.request.user)
 
 class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
@@ -48,12 +60,11 @@ class TaskViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         project_id = kwargs.get("project_id")
-        print(request.data, " ", project_id)
         serializer = TaskSerializer(
             data=request.data,
             context = {
                 "project_id":project_id,
-                "created_by":self.request.user
+                "user":request.user
             }
         )
         serializer.is_valid(raise_exception=True)
@@ -61,13 +72,10 @@ class TaskViewSet(ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+class TaskList(ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
 
-    # def perform_create(self, serializer):
-    #     project_id = self.kwargs.get("project_id")
-    #     # if self.request.user.role != 'admin':
-    #     #     raise PermissionDenied("Only admin can create tasks")
-
-    #     serializer.save(
-    #         project_id=project_id,
-    #         created_by=self.request.user
-    #     )
+    def get_queryset(self):
+        return Task.objects.filter(created_by = self.request.user)
