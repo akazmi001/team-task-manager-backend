@@ -92,15 +92,25 @@ WSGI_APPLICATION = 'task_management.wsgi.application'
 #         "HOST":"localhost"
 #     }
 # }
+# import dj_database_url
+# import os
+
+# DATABASES = {
+#     "default": dj_database_url.parse(
+#         os.environ.get("DATABASE_URL")
+#     )
+# }
 import dj_database_url
 import os
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL")
-    )
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL not set in environment")
+
+DATABASES = {
+    "default": dj_database_url.parse(DATABASE_URL)
+}
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
