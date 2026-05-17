@@ -9,22 +9,34 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 
 from users.models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer 
 
 class DashboardView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
-
         tasks = Task.objects.filter(assigned_to=user)
+        if user.role == "member":
+            data = {
+                "total": tasks.count(),
+                "completed": tasks.filter(status='done').count(),
+                "pending": tasks.filter(status='in_progress').count(),
+                "overdue": tasks.filter(due_date__lt=now(), status__in=['todo', 'in_progress']).count(),
+            }
 
-        data = {
-            "total": tasks.count(),
-            "completed": tasks.filter(status='done').count(),
-            "in_progress": tasks.filter(status='in_progress').count(),
-            "overdue": tasks.filter(due_date__lt=now(), status__in=['todo', 'in_progress']).count(),
-        }
+        elif user.role == "admin":
+            created_tasks = Task.objects.filter(created_by=user)
+            projects_created = Project.objects.filter(created_by = user)
+            data = {
+                "total": tasks.count(),
+                "completed": tasks.filter(status='done').count(),
+                "task_created": created_tasks.count(),
+                "projects_created": projects_created.count(),
+                "pending": tasks.filter(status='in_progress').count(),
+                "overdue": tasks.filter(due_date__lt=now(), status__in=['todo', 'in_progress']).count(),
+            }
 
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()  

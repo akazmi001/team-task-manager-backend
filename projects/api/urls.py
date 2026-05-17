@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProjectViewSet, TaskViewSet, TaskList
+from .views import ProjectViewSet, TaskViewSet, TaskList, DashboardView
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
@@ -46,4 +46,9 @@ urlpatterns = [
         user_tasks_detail,
         name="project-task-detail"
     ),
+    path(
+        "api/dashboard/",
+        DashboardView.as_view(),
+        name="dashboard"
+    )
 ]
